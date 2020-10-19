@@ -1,0 +1,203 @@
+---
+title: "Report on Relationships between Satisfaction of Life and Various Categories"
+author: "Andrei Velasevic"
+date: "Monday October 19th, 2020"
+output: pdf_document
+---
+---
+title: "Report on Relationships between Satisfaction of Life and Various Categories"
+author: "Andrei Velasevic"
+date: "Monday October 19th, 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(janitor)
+library(tidyverse)
+library(broom)
+library(knitr)
+setwd("C:/Users/andre/OneDrive/Desktop/School/Junior Year/STA304/PS2")
+```
+
+## Abstract
+
+The following report analyzes the linear relationship between various factors and life satisfaction (on a scale from 0 - 10). The data is organized such that the dependent "y" variable is life satisfaction taken from the **Canadian General Social Survey (GSS)** from 2017, in which the actual data set is labeled as "feelings life". The predictor "x" variables that are observed for this relationship are age, total children, province, and whether a person is aboriginal. Through regression analysis, various other graphs and plots, it is possible to state that most categories are able to form a statistically significant model in relationship to feelings towards life, or life satisfaction.
+
+Code and data supporting this analysis is available at: https://github.com/Andreivel23/STA304PS2
+
+## Introduction
+
+Using R programming language, the goal of this analysis is to see whether there is any relationship between age, total children, province, and aboriginal to life satisfaction. By looking at the data provided by GSS, it is possible to perform analyses on specific categories and create various tables and graphs. Firstly, the data is introduced as to what it is and where it was obtained. Following a brief explanation of the data is the methods and results, where all the relevant tables and graphs are shown and are provided with an explanation and analysis. Separate sections are used to discuss conclusions, weaknesses, and next steps that can be taken. 
+
+## Data
+
+The data selected for this report was the Canadian General Social Survey (GSS) of 2017. More specifically, the categories of age, feelings towards life, amount of children, province, and whether the person is aboriginal were used to conduct the regression analysis. When looking at feelings towards life, or life satisfaction, the other categories were selected because they could have a direct relationship.  
+The population of the data that is represented is Canada's citizens, with people being sampled from every province. A strength of GSS is that there was a very large sample size of over *20,000* people. It therefore seems to be a relatively fair representation of the population, considering that the provinces with highest population density also had the most responses (Ontario, see appendix Graph 4).  
+A potential drawback to the data is that some variables that were observed may not be independent of each other such as age and number of children.
+
+```{r, echo=FALSE, message=FALSE}
+data_set = read.csv("gss.csv")
+
+report_dataset = select(data_set, feelings_life, age, total_children, province, aboriginal)
+```
+
+## Model
+
+The selected model for this analysis was linear regression with multiple predictors or "x" variables. The variables differ between integer values, numerical values, and categorical variables in order to explain a relationship with "feelings towards life". In order to find a relationship, between the predictor variables and the "y" variable: "feelings towards life"; data was collected from GSS and fit into a linear model. Using estimates for the "slope" and "intercept" of the model. The slopes of all the individual predictor variables (age, province, etc...) explain how "feelings to life" changes from a unit increase in the former.  
+The data was formatted such that predictor variables that are categorical in nature were represented by dummy variables using the *as.factor()* function in R. The function factor is used to encode a vector as a factor.  
+  
+  
+Although the data from the model cannot be plotted altogether, individual parameters (slopes) can be explained intuitively, while other graphs and tables can be provided for further analysis. For example, graphs are used to depict frequencies, and correlations while tables are used for more specific information such as the linear regression model and proportions.
+
+## Results
+
+Shown in the following table is the linear regression model (Table 1). By using a linear model, it is possible to see the parameters of interest for the relationship between each of the predictor categories and life satisfaction. The table is formatted so that the term column represents all the variables taken from the GSS data. Intercept is the value of life satisfaction taken without valuing an of the variables. The estimates column shows values for the intercept and all the slope coefficients. Following this are the standard error, test statistic, and p-value columns.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+data_model = lm(feelings_life ~ age + as.factor(total_children) + as.factor(province) + as.factor(aboriginal),
+             data = report_dataset)
+
+kable(tidy(data_model), caption="Regression Model")
+```
+
+
+A histogram of frequencies of replies in the *"feelings of life"* category from the GSS is shown in Graph 1. According to this plot, most people have life satisfaction above *6*; while specific proportions can be shown in Table 2.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+report_dataset %>% 
+  ggplot(aes(x=feelings_life))+
+  geom_histogram()+
+  ggtitle("Graph 1: Frequency of Life Satisfaction")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(x="Life Satisfaction", y="Frequency")
+
+#proportion of people with life satisfaction above 6:
+report_dataset %>% 
+  group_by(feelings_life > 6) %>% 
+  count() %>% 
+  ungroup() %>% 
+  mutate(proportion = n/(sum(n))) %>% 
+  kable(caption="Proportion of People with Positive Feelings Towards Life")
+
+
+```  
+
+It is possible to show correlation between age and feelings to life (Graph 2). This is done through means of a scatter plot with transparency in sparse points. The blue line on this graph represents the linear model on only the relationship between these two variables. It is data that is also shown in Table 1. The specific parameters for this line give estimates for the intercept (*7.5435721* approximately) and slope (*0.0007891* approximately).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+report_dataset %>%
+  ggplot(aes(x = age, y = feelings_life)) +
+  ggtitle("Graph 2: Correlation between Age and Feelings of Life")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(x = "Age", y = "Feelings of Life")+
+  geom_point(alpha = 0.02) +
+  geom_smooth(method="lm")
+```
+
+
+Graph 3 is a histogram of whether a person identifies as aboriginal or not. There are also bins for people who do not know and an N/A bin. The vast majority of people do not identify as aboriginal, over *15,000*.  
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+report_dataset %>% 
+  ggplot(aes(x=aboriginal))+
+  geom_histogram(stat="count")+
+  ggtitle("Graph 3: Aboriginal Frequency")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(y = "Frequency", x = "Aboriginal")
+```
+
+## Discussion
+
+According to Table 1, the regression analysis, the estimate of the intercept is *7.54* approximately with a very small p value. This means that life satisfaction is expected to be approximately 8 when all the other categories are ignored. The p value gives an idea of how significant statistically this parameter is. A small value shows greater significance therefore the estimate for the intercept is worth keeping. Going down the estimate column gives various estimates of the slopes of each predictor variable. The only slope estimates worth discussing are the ones with high statistical significance (low p value). Considering a significance level of *0.05* (threshold for which p values are considered significant, p value must be below the threshold) the relationships of age, people from British Columbia, Manitoba, Nova Scotia, Ontario and PEI, along with whether someone is aboriginal or not is statistically insignificant. Their p values are above the threshold *0.05*.  
+  From the categories that are significant, the strongest relationships are for people with children. People who answered with total children of 4 show a slope estimate of 0.45 approximately, which is the largest slope in the data, followed by a minority group with total children of 7 (slope is *0.39* approximately) and total children of 2 (slope is *0.33* approximately). 
+
+The Histogram shown in Graph 1 and Table 2 show strong evidence that the sample population generally views life in a positive light (rating above 6). *86%* of people said their feelings towards life are above 6.
+  
+Since most people have life satisfaction relatively high (Graph 2), it is tough to see a trend in how age relates to this.  
+
+
+# Weaknesses
+
+The age histogram shows a huge amount of people in the 80 age category, It is likely a measurement issue since the surveyors categorized anyone above 80 within 80, that leads to inflated 80s. Another issue in the data is that the vast majority of people surveyed under the aboriginal category do not identify as aboriginal. *"Don't know"* and *"Yes"* have very low frequencies when compared to *"No"*, therefore it is hard to draw any conclusive evidence from such low frequencies. In fact the N/A category has a higher frequency than *"Yes"* and *"Don't Know"* combined. For example, the large proportion of people who chose *"No"* would result in proper conclusions however the same cannot be said for those who chose *"Yes"* or *"Don't Know"*.  
+  
+When referring to the frequency chart of total children (Graph 5 in appendix), it is seen that a large majority have less than 4 children, in fact approximately *90%* do (Table 3 in appendix). This is a problem since the data can be skewed due to this, there is not a fair representation for people who have an abnormally large number of children due to their small sample size (relatively speaking).  
+
+  
+Since the feelings to life category can be classified as a categorical variable the linear model is not ideal, however it provides a general idea of the model fit.   
+
+Not all of the parameters show statistical significance according to their relative p values. For example, age was shown to be insignificant when analyzed in relation to feelings towards life. However it can still be plotted on a histogram with an equation.  
+
+There were not any ideal graphs in R to show the correlation between two discrete variables. since the **Canadian General Social Survey** has over 20,000 observations, presenting certain variables proved troublesome. For example, when trying to plot a total children relationship with feelings to life, a graph initially just looks illegible. Only after tampering with certain settings was it possible to at least slightly show significant results (Graph 2). This is also seen in the appendix Graph 7.
+
+# Next Steps
+
+A potential fix to the data analysis in this report is that the feelings towards life survey may be classified as a discrete variable. This presents problems in a linear regression analysis that is meant for continuous variables. However a logistic binomial regression model wouldn't work either since it only analyzes a binomial response (example is whether or not someone is satisfied with their life, instead of presenting a ranking of 0 - 10). There could be a different model used besides the ones discussed above to better represent the conclusions and form a better overall analysis.  
+Another next step would be to find a way to better represent the data in graphical form. As mentioned in the weaknesses section, plotting the correlation between two discrete variables is not so simple. A solution for this problem would be to use a mosaic plot which is unavailable in the R code used.  
+
+## Appendix
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+report_dataset %>% 
+  ggplot(aes(x=province))+
+  geom_histogram(stat="count")+
+  scale_x_discrete(guide = guide_axis(n.dodge=3))+
+  ggtitle("Graph 4: Provincial Poll Count")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(x="Province", y="Count")
+
+report_dataset %>% 
+  ggplot(aes(x=total_children))+
+  geom_histogram()+
+  ggtitle("Graph 5: Total Children Count")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(x="Total Children", y="Count")
+
+report_dataset %>% 
+  ggplot(aes(x=age))+
+  geom_histogram()+
+  ggtitle("Graph 6: Age Frequencies")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(x="Age", y="Frequency")
+
+report_dataset %>%
+  ggplot(aes(x = as.factor(total_children), y = feelings_life)) +
+  ggtitle("Graph 7: Correlation Between Total Children and Feelings to Life")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(x = "Total Children", y = "Feelings of Life")+
+  geom_point(alpha = 0.02)
+
+report_dataset %>% 
+  group_by(total_children < 4) %>% 
+  count() %>% 
+  ungroup() %>% 
+  mutate(proportion = n/(sum(n))) %>% 
+  kable(caption="Proportion of People with Less than 4 Total Children")
+
+```
+
+## References
+
+  Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software,
+  4(43), 1686, https://doi.org/10.21105/joss.01686  
+  
+  Sam Firke (2020). janitor: Simple Tools for Examining and Cleaning Dirty Data. R
+  package version 2.0.1. https://CRAN.R-project.org/package=janitor  
+  
+  David Robinson, Alex Hayes and Simon Couch (2020). broom: Convert Statistical
+  Objects into Tidy Tibbles. R package version 0.7.0.
+  https://CRAN.R-project.org/package=broom  
+  
+  Yihui Xie (2020). knitr: A General-Purpose Package for Dynamic Report Generation
+  in R. R package version 1.29.
+
+  Yihui Xie (2015) Dynamic Documents with R and knitr. 2nd edition. Chapman and
+  Hall/CRC. ISBN 978-1498716963
+
+  Yihui Xie (2014) knitr: A Comprehensive Tool for Reproducible Research in R. In
+  Victoria Stodden, Friedrich Leisch and Roger D. Peng, editors, Implementing
+  Reproducible Computational Research. Chapman and Hall/CRC. ISBN 978-1466561595
+
