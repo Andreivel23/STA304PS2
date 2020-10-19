@@ -80,8 +80,6 @@ report_dataset %>%
   ungroup() %>% 
   mutate(proportion = n/(sum(n))) %>% 
   kable(caption="Proportion of People with Positive Feelings Towards Life")
-
-
 ```  
 
 It is possible to show correlation between age and feelings to life (Graph 2). This is done through means of a scatter plot with transparency in sparse points. The blue line on this graph represents the linear model on only the relationship between these two variables. It is data that is also shown in Table 1. The specific parameters for this line give estimates for the intercept (*7.5435721* approximately) and slope (*0.0007891* approximately).
@@ -176,7 +174,6 @@ report_dataset %>%
   ungroup() %>% 
   mutate(proportion = n/(sum(n))) %>% 
   kable(caption="Proportion of People with Less than 4 Total Children")
-
 ```
 
 ## References
